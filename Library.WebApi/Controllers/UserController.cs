@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Library.Infrastructure.Entities;
 using Library.WebApi.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -33,12 +34,7 @@ namespace Library.WebApi.Controllers
             _configuration = configuration;
         }
 
-        //[HttpPost]
-        //public async Task LogOut()
-        //{
-        //    await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-        //}
-
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
@@ -95,6 +91,8 @@ namespace Library.WebApi.Controllers
         /// </summary>
         /// <param name="saveModel"></param>
         /// <returns></returns>
+        /// 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Save([FromBody] SaveModel saveModel)
         {
@@ -136,7 +134,8 @@ namespace Library.WebApi.Controllers
                             }
                         }
                     }
-                    return Ok();
+                    var token = await GenerateJwtTokenAsync(user);
+                    return Ok(token);
                 }
                 else
                 {
@@ -149,6 +148,7 @@ namespace Library.WebApi.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet(Name = "GetRoles")]
         public IActionResult GetRoles()
         {
@@ -156,6 +156,7 @@ namespace Library.WebApi.Controllers
             return new ObjectResult(roles);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}", Name = "GetRole")]
         public async Task<IActionResult> GetRole(string id)
         {
@@ -170,6 +171,7 @@ namespace Library.WebApi.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> SaveRole([FromBody] RoleModel roleModel)
         {

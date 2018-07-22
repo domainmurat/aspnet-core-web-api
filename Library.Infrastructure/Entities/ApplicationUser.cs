@@ -7,5 +7,10 @@ namespace Library.Infrastructure.Entities
 {
     public class ApplicationUser : IdentityUser
     {
+        public ApplicationUser()
+        {
+            BookTrackings = new HashSet<BookTracking>();
+        }
+        public virtual ICollection<BookTracking> BookTrackings { get; set; }
     }
 }

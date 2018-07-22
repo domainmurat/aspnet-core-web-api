@@ -10,6 +10,7 @@ using Library.Infrastructure.Context;
 using Library.Infrastructure.Entities;
 using Library.Infrastructure.Interfaces;
 using Library.Infrastructure.Repositories;
+using Library.Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -101,6 +102,7 @@ namespace Library.WebApi
 
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
+            services.AddScoped<IBookTrackingRepository, BookTrackingRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
@@ -165,7 +167,10 @@ namespace Library.WebApi
                 c.RoutePrefix = string.Empty;
             });
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }
