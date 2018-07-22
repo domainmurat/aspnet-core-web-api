@@ -92,7 +92,7 @@ namespace Library.WebApi.Controllers
         /// <param name="saveModel"></param>
         /// <returns></returns>
         /// 
-        [Authorize(Roles = "Admin")]
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Save([FromBody] SaveModel saveModel)
         {
