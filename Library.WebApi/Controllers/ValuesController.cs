@@ -11,10 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Library.WebApi.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]/[action]")]
-    public class ValuesController : ControllerBase
+    public class ValuesController : Controller
     {
-        // GET api/values
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public ActionResult<IEnumerable<string>> Get()

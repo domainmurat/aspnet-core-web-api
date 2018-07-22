@@ -33,11 +33,11 @@ namespace Library.WebApi.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost]
-        public async Task LogOut()
-        {
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-        }
+        //[HttpPost]
+        //public async Task LogOut()
+        //{
+        //    await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        //}
 
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
