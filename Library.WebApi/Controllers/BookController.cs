@@ -6,21 +6,25 @@ using Library.Infrastructure.Entities;
 using Library.Infrastructure.Interfaces;
 using Library.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.WebApi.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("[controller]/[action]")]
     public class BookController : Controller
     {
         private readonly IAsyncRepository<Book> _bookRepository;
         private readonly IBookTrackingRepository _bookTrackingRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public BookController(IAsyncRepository<Book> bookRepository, IBookTrackingRepository bookTrackingRepository)
+        public BookController(IAsyncRepository<Book> bookRepository, IBookTrackingRepository bookTrackingRepository,
+                UserManager<ApplicationUser> userManager)
         {
             _bookRepository = bookRepository;
             _bookTrackingRepository = bookTrackingRepository;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -29,7 +33,7 @@ namespace Library.WebApi.Controllers
             return await _bookRepository.ListAllAsync();
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<Book> SaveBook([FromBody] BookModel bookModel)
         {
             Book book = new Book();
@@ -39,11 +43,11 @@ namespace Library.WebApi.Controllers
 
             if (book.Id > 0)
             {
-                await _bookRepository.AddAsync(book);
+                await _bookRepository.UpdateAsync(book);
             }
             else
             {
-                await _bookRepository.UpdateAsync(book);
+                await _bookRepository.AddAsync(book);
             }
             return book;
 
@@ -84,18 +88,35 @@ namespace Library.WebApi.Controllers
         [HttpPost("{userId}")]
         public async Task<List<BookTrackingModel>> UserBook(string userId)
         {
-            var bookTrackings = await _bookTrackingRepository.ListAsync(x => x.UserId == userId);
-            return bookTrackings.Select(x => new BookTrackingModel()
+            try
             {
-                BookId = x.BookId,
-                BookTrackingId = x.Id,
-                UserId = x.UserId,
-                BookName = x.Book.Name,
-                UserName = x.ApplicationUser.UserName,
-                TotalQunatity = x.Book.Quantity,
-                ReserveDate = x.ReserveDate,
-                ReturnDate = x.ReturnDate
-            }).ToList();
+                List<BookTrackingModel> bookTrackingModels = new List<BookTrackingModel>();
+                var bookTrackings = await _bookTrackingRepository.ListAsync(x => x.UserId == userId);
+
+                foreach (var item in bookTrackings)
+                {
+                    BookTrackingModel bookTrackingModel = new BookTrackingModel();
+                    var book = await _bookRepository.GetByIdAsync(item.BookId);
+                    var user = await _userManager.FindByIdAsync(item.UserId);
+
+                    bookTrackingModel.BookId = item.BookId;
+                    bookTrackingModel.BookTrackingId = item.Id;
+                    bookTrackingModel.UserId = item.UserId;
+                    bookTrackingModel.BookName = book != null ? book.Name : string.Empty;
+                    bookTrackingModel.UserName = user != null ? user.UserName : string.Empty;
+                    bookTrackingModel.TotalQunatity = book != null ? book.Quantity : 0;
+                    bookTrackingModel.ReserveDate = item.ReserveDate;
+                    bookTrackingModel.ReturnDate = item.ReturnDate;
+
+                    bookTrackingModels.Add(bookTrackingModel);
+                }
+                return bookTrackingModels;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
         }
     }
 }
