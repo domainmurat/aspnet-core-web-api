@@ -30,6 +30,7 @@ namespace Library.Infrastructure.Repository
                              && bt.UserId == entity.UserId
                              select bt;
                 //checking user reserved books count
+                //todo actual reserved count must be reservedBooksCount - returnedBooksCount
                 if (result.Count() < 3)
                 {
                     result = result.Where(x => x.BookId == entity.BookId);
